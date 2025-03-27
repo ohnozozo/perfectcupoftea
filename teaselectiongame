@@ -1,0 +1,641 @@
+import streamlit as st
+import pandas as pd
+import time
+
+#build dictionary of all different teas 
+#name of tea
+#caffeine level of none, low and medium (no high as not including matcha)
+#mood - mood I associate with the tea for the generator
+#image - image of the tea tin from b&b tea website 
+
+tea_data = {
+    "All Nighter": {
+        "caffeine": "Medium",
+        "tea_type": "Yerba Mate",
+        "mood": "Focused",
+        "product_url": "https://www.birdandblendtea.com/products/all-nighter-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/all-nighter-energising-yerba-mate-loose-leaf-tea-coffee-beans-cocoa-chocolate.png?v=1652803871&width=1500"
+    },
+    "Ankara Apple": {
+        "caffeine": "Low",
+        "tea_type": "Green",
+        "mood": "Focused",
+        "product_url": "https://www.birdandblendtea.com/products/ankara-apple-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/ankara-apple-juicy-fruity-loose-leaf-green-tea-fruit-traditional-turkish.png?v=1651995065&width=750"
+    },
+    "Apple Strudel": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Cosy",
+        "product_url": "https://www.birdandblendtea.com/products/apple-strudel-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/apple-strudel-sweet-fruity-dessert-cinnamon-loose-leaf-rooibos-caffeine-free-tea.png?v=1651997497&width=1500"
+    },
+    "Assam House Blend": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Classic",
+        "product_url": "https://www.birdandblendtea.com/products/assam-house-blend-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/assam-house-blend-loose-leaf-black-earl-grey-tea.png?v=1651994153&width=750"
+    },
+    "Banana Bread Chai": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Playful",
+        "product_url": "https://www.birdandblendtea.com/products/banana-bread-chai-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/banana-bread-chai-spiced-fruity-sweet-dessert-loose-leaf-rooibos-caffeine-free-tea.png?v=1651999385&width=750"
+    },
+    "Bears Like Marmalade": {
+        "caffeine": "None",
+        "tea_type": "Fruit",
+        "mood": "Playful",
+        "product_url": "https://www.birdandblendtea.com/products/bears-like-marmalade-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/files/bears-like-marmalade-tea-tin.jpg?v=1689262537&width=1500"  
+    },
+    "Belles Breakfast": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Enchanted",
+        "product_url": "https://www.birdandblendtea.com/products/belles-breakfast-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/belles-breakfast-traditional-rose-loose-leaf-black-tea.png?v=1652803519&width=750"
+    },
+    "Birthday Cake": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Nostalgic", 
+        "product_url": "https://www.birdandblendtea.com/products/birthday-cake-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/birthday-cake-sweet-vanilla-sprinkles-celebration-loose-leaf-caffeine-free-rooibos-tea.png?v=1651997226&width=1500"
+    },
+    "Black Forest": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Nostalgic",
+        "product_url": "https://www.birdandblendtea.com/products/black-forest-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/black-forest-cholocate-gateau-black-loose-leaf-tea.png?v=1651997240&width=1500"
+    },
+    "Blueberry Peach": {
+        "caffeine": "None",
+        "tea_type": "Fruit",
+        "mood": "Hopeful",
+        "product_url": "https://www.birdandblendtea.com/products/blueberry-peach-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/blueberry-peach-fruity-juicy-loose-leaf-fruit-tea.png?v=1651996265&width=750"
+    },
+    "Blueberry Pancakes": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Hungry",
+        "product_url": "https://www.birdandblendtea.com/products/blueberry-pancake-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/blueberry-pancakes-sweet-fruity-dessert-cake-loose-leaf-rooibos-caffeine-free-tea.png?v=1651999986&width=1500"
+    },
+    "Bonfire Toffee": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Cosy",
+        "product_url": "https://www.birdandblendtea.com/products/bonfire-toffee-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/bonfire-toffee-sweet-smoky-loose-leaf-black-tea.png?v=1651993879&width=1500"
+    },
+    "Builder's Breakfast Brew": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Determined",
+        "product_url": "https://www.birdandblendtea.com/products/builders-breakfast-brew-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/builders-breakfast-brew-traditional-loose-leaf-black-tea.png?v=1651993891&width=1500"
+    },
+    "Butter Brew": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Magical",
+        "product_url": "https://www.birdandblendtea.com/products/butter-brew-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/butter-brew-caramel-sweet-loose-leaf-black-tea.png?v=1652803265&width=750"
+    },
+    "Butter Toffee Popcorn": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Lazy",
+        "product_url": "https://www.birdandblendtea.com/products/butter-toffee-popcorn-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/butter-toffee-popcorn-sweet-toasted-dessert-vegan-loose-leaf-rooibos-caffeine-free-tea.png?v=1651999992&width=1500"
+    },
+    "Buttermint": {
+        "caffeine": "None",
+        "tea_type": "Herbal",
+        "mood": "Nostalgic",
+        "product_url": "https://www.birdandblendtea.com/products/buttermint-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/files/buttermint-tea-tin.png?v=1710864405&width=1500"
+    },
+    "Campfires and Vampires": {
+        "caffeine": "Low",
+        "tea_type": "Green",
+        "mood": "Magical",
+        "product_url": "https://www.birdandblendtea.com/products/campfires-vampires-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/campfires-and-vampires-cinnamon-rose-cloves-green-loose-leaf-tea.png?v=1651997946&width=1500"
+    },
+    "Carrot Cake": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Chilled",
+        "product_url": "https://www.birdandblendtea.com/products/carrot-cake-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/carrot-cake-sweet-dessert-nutmeg-rooibos-loose-leaf-tea-caffeine-free.png?v=1651997479&width=750"
+
+    },
+    "Cherry Bakewell": {
+        "caffeine": "Low",
+        "tea_type": "White",
+        "mood": "Nostalgic",
+        "product_url": "https://www.birdandblendtea.com/products/cherry-bakewell-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/cherry-bakewell-sweet-dessert-almond-loose-leaf-white-tea.png?v=1651996025&width=750"
+    },
+    "Cherry Cola Bottles": {
+        "caffeine": "None",
+        "tea_type": "Fruit",
+        "mood": "Adventurous",
+        "product_url": "https://www.birdandblendtea.com/products/cherry-cola-bottles-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/cherry-cola-bottles-fruit-loose-leaf-tea-infusion.png?v=1651997485&width=1500"
+    },
+    "Chinese Treasures": {
+        "caffeine": "Low",
+        "tea_type": "Green",
+        "mood": "Traditional",
+        "product_url": "https://www.birdandblendtea.com/products/chinese-treasures-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/chinese-treasures-ba-bao-cha-traditional-blend-loose-leaf-green-tea.png?v=1651995185&width=750"
+    },
+    "Chocolate Digestives": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Excited",
+        "product_url": "https://www.birdandblendtea.com/products/chocolate-digestives-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/Chocolate-digestives-sweet-biscuit-loose-leaf-black-tea.png?v=1740668911&width=750"
+    },
+    "Cococabana Cooler": {
+        "caffeine": "None",
+        "tea_type": "Fruit",
+        "mood": "Excited",
+        "product_url": "https://www.birdandblendtea.com/products/cococabana-coola-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/cococabana-coola-loose-leaf-fruit-tea-juicy-fruity-pineapple-papaya-passionfruit.png?v=1651996523&width=1500"
+    },
+    "Coconut Milk Oolong": {
+        "caffeine": "Low",
+        "tea_type": "Oolong",
+        "mood": "Hopeful",
+        "product_url": "https://www.birdandblendtea.com/products/coconut-milk-oolong-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/coconut-milk-oolong-creamy-soothing-digestion-loose-leaf-tea.png?v=1651994585&width=1500"
+    },
+    "Cold Weather Warrior": {
+        "caffeine": "None",
+        "tea_type": "Herbal",
+        "mood": "Determined",
+        "product_url": "https://www.birdandblendtea.com/products/cold-weather-warrior-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/cold-weather-warrior-eucalyptus-echinacea-herbal-remedy-loose-leaf-tea-caffeine-free.png?v=1651997022&width=1500"
+    },
+    "Dark Choc Chili Chai": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Adventurous",
+        "product_url": "https://www.birdandblendtea.com/products/dark-choc-chilli-chai-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/files/dark-choc-chilli-chai-spicy-chocolate-loose-leaf-black-tea-tin.png?v=1690903008&width=750"
+    },
+    "Deckchair Dreaming": {
+        "caffeine": "None",
+        "tea_type": "Herbal",
+        "mood": "Relaxed",
+        "product_url": "https://www.birdandblendtea.com/products/deckchair-dreaming-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/deckchair-dreaming-relaxing-soothing-sleep-chamomile-apple-loose-leaf-herbal-tea-caffeine-free.png?v=1651996758&width=1500"
+    },
+    "Deep Breaths": {
+        "caffeine": "None",
+        "tea_type": "Herbal",
+        "mood": "Calm",
+        "product_url": "https://www.birdandblendtea.com/products/deep-breaths-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/deep-breaths-ginger-peppermint-mint-chamomile-soothing-relaxing-sleep-caffeine-free-loose-leaf-herbal-tea.png?v=1651996290&width=1500"
+    },
+    "Dozy Girl": {
+        "caffeine": "None",
+        "tea_type": "Herbal",
+        "mood": "Sleepy",
+        "product_url": "https://www.birdandblendtea.com/products/dozy-girl-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/dozy-girl-loose-leaf-herbal-tea-chamomile-lavender-rose-soothing-relaxing-sleep-caffeine-free.png?v=1651996770&width=1500"
+    },
+    "Duvet Day": {
+        "caffeine": "Low",
+        "tea_type": "White",
+        "mood": "Calm",
+        "product_url": "https://www.birdandblendtea.com/products/duvet-day-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/duvet-day-coconut-fruity-jasmine-floral-natural-cinnamon-spiced-relaxing-soothing-loose-leaf-white-tea.png?v=1652000226&width=1500"
+    },
+    "Earl Grey Creme": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Reflective",
+        "product_url": "https://www.birdandblendtea.com/products/earl-grey-creme-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/earl-grey-creme-loose-leaf-black-tea.png?v=1651993625&width=1500"
+    },
+    "Enchanted Narnia": {
+        "caffeine": "None",
+        "tea_type": "Herbal",
+        "mood": "Magical",
+        "product_url": "https://www.birdandblendtea.com/products/enchanted-narnia-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/enchanted-narnia-book-turkish-delight-chocolate-floral-rose-cocoa-soothing-caffeine-free-loose-leaf-herbal-tea.png?v=1651997042&width=1500"
+    },
+    "Eton Mess": {
+        "caffeine": "None",
+        "tea_type": "Fruit",
+        "mood": "Nostalgic",
+        "product_url": "https://www.birdandblendtea.com/products/eton-mess-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/eton-mess-dessert-sweet-strawberries-loose-leaf-fruit-tea.png?v=1651996393&width=1500"
+    },
+    "Ginger Beer": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Adventurous",
+        "product_url": "https://www.birdandblendtea.com/products/ginger-beer-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/ginger-beer-lemon-fruity-lime-alcohol-free-caffeine-free-loose-leaf-rooibos-tea.png?v=1651997466&width=1500"
+    },
+    "Gingerbread Chai": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Happy",
+        "product_url": "https://www.birdandblendtea.com/products/gingerbread-chai-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/gingerbread-chai-spiced-award-winning-ginger-cake-sweet-dessert-caffeine-free-loose-leaf-rooibos-tea.png?v=1651996986&width=1500"
+    },
+    "Good Calmer Turmeric Tea": {
+        "caffeine": "None",
+        "tea_type": "Herbal",
+        "mood": "Adventurous",
+        "product_url": "https://www.birdandblendtea.com/products/good-calmer-turmeric-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/good-calmer-turmeric-cocoa-chocolate-ginger-soothing-calming-relaxing-loose-leaf-herbal-tea-caffeine-free.png?v=1651994826&width=1500"
+    },
+    "Great British Cuppa": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Calm",
+        "product_url": "https://www.birdandblendtea.com/products/great-british-cuppa-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/great-british-cuppa-traditional-loose-leaf-black-tea.png?v=1651993897&width=750"
+    },
+    "Honeycomb Cookie D'Oh": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Unstoppable",
+        "product_url": "https://www.birdandblendtea.com/products/honeycomb-cookie-doh-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/honeycomb-cookie-doh-cookies-and-cream-loose-leaf-rooibos-tea.png?v=1651999865&width=1500"
+    },
+    "Jasmine Poached Pears": {
+        "caffeine": "Low",
+        "tea_type": "Green",
+        "mood": "Playful",
+        "product_url": "https://www.birdandblendtea.com/products/jasmine-poached-pears-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/jasmine-poached-pears-sencha-loose-leaf-green-tea.png?v=1651999266&width=1500"
+    },
+    "Lady Lavender": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Relaxed",
+        "product_url": "https://www.birdandblendtea.com/products/lady-lavender-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/lady-lavender-earl-grey-loose-leaf-black-tea.png?v=1651994105&width=1500"
+    },
+    "Lemon and Ginger": {
+        "caffeine": "None",
+        "tea_type": "Herbal",
+        "mood": "Traditional",
+        "product_url": "https://www.birdandblendtea.com/products/lemon-and-ginger-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/lemon-ginger-zingy-fruity-herbal-remedy-caffeine-free-loose-leaf-tea.png?v=1651995443&width=1500"
+    },
+    "Lemon Sherbet": {
+        "caffeine": "None",
+        "tea_type": "Fruit",
+        "mood": "Energised",
+        "product_url": "https://www.birdandblendtea.com/products/lemon-sherbet-lemonade-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/lemon-sherbet-loose-leaf-fruit-tea-tin.png?v=1651835345&width=1500"
+    },
+    "Love Potion": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Whimsical",
+        "product_url": "https://www.birdandblendtea.com/products/love-potion-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/love-potion-loose-leaf-tea-tin.jpg?v=1673446794&width=1500"
+    },
+    "Mascarpone and Sour Cherry": {
+        "caffeine": "Low",
+        "tea_type": "Oolong",
+        "mood": "Adventurous",
+        "product_url": "https://www.birdandblendtea.com/products/mascarpone-sour-cherry-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/mascarpone-sour-cherry-oolong-loose-leaf-tea.png?v=1651998785&width=1500"
+    },
+    "Milk Oolong Chai": {
+        "caffeine": "Low",
+        "tea_type": "Oolong",
+        "mood": "Excited",
+        "product_url": "https://www.birdandblendtea.com/products/milk-oolong-chai-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/milk-oolong-chai-creamy-spices-smooth-digestion-loose-leaf-tea.png?v=1652803505&width=1500"
+    },
+    "Mint Choc Rooibos": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Excited",
+        "product_url": "https://www.birdandblendtea.com/products/mint-choc-rooibos-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/mint-choc-rooibos-chocolate-peppermint-sweet-dessert-relaxing-soothing-treat-loose-leaf-rooibos-tea-caffeine-free.png?v=1651997749&width=1500"
+    },
+    "Mint Pistachio": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Unstoppable",
+        "product_url": "https://www.birdandblendtea.com/products/mint-pistachio-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/mint-pistachio-black-loose-leaf-tea.png?v=1651999625&width=1500"
+    },
+    "Mocha Chai": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Energetic",
+        "product_url": "https://www.birdandblendtea.com/products/mocha-chai-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/mocha-chai-loose-leaf-black-tea-coffee-chocolate.png?v=1651994345&width=1500"
+    },
+    "Mojitea": {
+        "caffeine": "Low",
+        "tea_type": "Green",
+        "mood": "Excited",
+        "product_url": "https://www.birdandblendtea.com/products/mojitea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/mojitea-mint-peppermint-lime-lemon-fruity-refreshing-loose-leaf-green-tea.png?v=1651995071&width=1500"
+    },
+    "Monkey Chops": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Playful",
+        "product_url": "https://www.birdandblendtea.com/products/monkey-chops-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/monkey-chops-loose-leaf-black-tea-banana-vanilla.png?v=1651994142&width=1500"
+    },
+    "Moondrop Dreams": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Relaxed",
+        "product_url": "https://www.birdandblendtea.com/products/monkey-chops-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/moondrop-dreams-soothing-calming-relaxing-caffeine-free-lemon-lavender-loose-leaf-rooibos-tea.png?v=1651997245&width=1500"
+    },
+    "Morning Kick": {
+        "caffeine": "Medium",
+        "tea_type": "Yerba Mate",
+        "mood": "Determined",
+        "product_url": "https://www.birdandblendtea.com/products/morning-kick-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/morning-kick-lemon-fruity-ginger-energising-loose-leaf-tea.png?v=1651996295&width=1500"
+    },
+    "Nearly Nirvana": {
+        "caffeine": "Low",
+        "tea_type": "White",
+        "mood": "Reflective",
+        "product_url": "https://www.birdandblendtea.com/products/nearly-nirvana-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/nearly-nirvana-jasmine-peppermint-minty-white-needle-loose-leaf-tea-relaxing-soothing.png?v=1651996037&width=1500"
+    },
+    "Nuts About You": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Curious",
+        "product_url": "https://www.birdandblendtea.com/products/nuts-about-you-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/nuts-about-you-loose-laef-tea-tin.png?v=1658307343&width=1500"
+    },
+    "Peach Cobbler": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Curious",
+        "product_url": "https://www.birdandblendtea.com/products/peach-cobbler-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/peach-cobbler-loose-leaf-black-tea-fruity-sweet.png?v=1651994357&width=1500"
+    },
+    "Peach Soda": {
+        "caffeine": "None",
+        "tea_type": "Fruit",
+        "mood": "Happy",
+        "product_url": "https://www.birdandblendtea.com/products/peach-soda-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/peach-soda-loose-leaf-fruit-tea.png?v=1652000825&width=1500"
+    },
+    "Peppermint Cream": {
+        "caffeine": "Low",
+        "tea_type": "Oolong",
+        "mood": "Nostalgic",
+        "product_url": "https://www.birdandblendtea.com/products/peppermint-cream-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/peppermint-cream-soothing-creamy-mint-cocoa-chocolate-loose-leaf-digestion-oolong-tea.png?v=1651994615&width=1500"
+    },
+    "Peppy Mint": {
+        "caffeine": "None",
+        "tea_type": "Herbal",
+        "mood": "Reflective",
+        "product_url": "https://www.birdandblendtea.com/products/peppy-mint-peppermint-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/peppy-mint-peppermint-refreshing-soothing-calming-relaxing-loose-leaf-herbal-tea-caffeine-free.png?v=1651996746&width=1500"
+    },
+    "Pina Colada": {
+        "caffeine": "None",
+        "tea_type": "Fruit",
+        "mood": "Lazy",
+        "product_url": "https://www.birdandblendtea.com/products/pina-colada-fruit-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/pina-colada-tropical-loose-leaf-fruit-tea-coconut-pineapple-lemon-grass-rose_58c3f51c-2a95-4719-914e-7d6f0fc94b91.png?v=1651996776&width=1500"
+    },
+    "Pink Grapefruit": {
+        "caffeine": "Low",
+        "tea_type": "Green",
+        "mood": "Happy",
+        "product_url": "https://www.birdandblendtea.com/products/pink-grapefruit-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/pink-grapefruit-sencha-loose-leaf-green-tea.png?v=1651999505&width=1500"
+    },
+    "Red Velvet": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Lazy",
+        "product_url": "https://www.birdandblendtea.com/products/red-velvet-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/red-velvet-chocolate-beetroot-black-loose-leaf-tea.png?v=1651998305&width=1500"
+    },
+    "Rhubarb and Custard": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Reflective",
+        "product_url": "https://www.birdandblendtea.com/products/rhubarb-custard-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/rhubarb-custard-sweet-dessert-tangy-vegan-loose-leaf-tea-rooibos-caffeine-free.png?v=1651997108&width=1500"
+    },
+    "Rooibos Breakfast Cuppa": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Traditional",
+        "product_url": "https://www.birdandblendtea.com/products/rooibos-breakfast-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/rooibos-breakfast-cuppa-traditional-loose-leaf-tea-rooibos-caffeine-free.png?v=1651995792&width=1500https://www.birdandblendtea.com/cdn/shop/products/rooibos-breakfast-cuppa-traditional-loose-leaf-tea-rooibos-caffeine-free.png?v=1651995792&width=1500"
+    },
+    "Rooibos Earl Grey": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Determined",
+        "product_url": "https://www.birdandblendtea.com/products/rooibos-earl-grey-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/rooibos-earl-grey-loose-leaf-tea-naturally-caffeine-free-traditional.png?v=1651997763&width=1500"
+    },
+    "Salted Caramel Chai": {
+        "caffeine": "Medium",
+        "tea_type" : "Black",
+        "mood": "Hopeful",
+        "product_url": "https://www.birdandblendtea.com/products/salted-caramel-chai-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/salted-caramel-chai-tea.png?v=1681900738&width=1500"
+    },
+    "Sangria": {
+        "caffeine": "None",
+        "tea_type": "Fruit",
+        "mood": "Reflective",
+        "product_url": "https://www.birdandblendtea.com/products/sangria-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/sangria-loose-leaf-fruit-tea.png?v=1652000945&width=1500"
+    },
+    "Smoky Russian": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Strong",
+        "product_url": "https://www.birdandblendtea.com/products/smoky-russian-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/smoky-russian-loose-leaf-black-tea-traditional-smoked-russian-caravan-tea.png?v=1651993873&width=1500"
+    },
+    "Strawberry and Pomegranate": {
+        "caffeine": "None",
+        "tea_type": "Fruit",
+        "mood": "Cheeky",
+        "product_url": "https://www.birdandblendtea.com/products/strawberry-pomegranate-tea",
+         "image": "https://www.birdandblendtea.com/cdn/shop/products/strawberry-pomagranate-loose-leaf-fruit-tea-juicy-fruity.png?v=1652803865&width=1500https://www.birdandblendtea.com/cdn/shop/products/strawberry-pomagranate-loose-leaf-fruit-tea-juicy-fruity.png?v=1652803865&width=1500"
+    },
+    "Strawberry Lemonade": {
+        "caffeine": "None",
+        "tea_type": "Fruit",
+        "mood": "Enchanted",
+        "product_url": "",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/strawberry-lemonade-juicy-fruity-loose-leaf-fruit-tea-lemon.png?v=1651996277&width=1500"
+    },
+    "Summer of Love": {
+        "caffeine": "Low",
+        "tea_type": "Green",
+        "mood": "Cheeky",
+        "product_url": "https://www.birdandblendtea.com/products/summer-of-love-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/summer-of-love-floral-loose-leaf-green-tea-fruity-juicy-bamboo-leaf.png?v=1652003856&width=1500"
+    },
+    "Tea and Toast": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Cheeky",
+        "product_url": "https://www.birdandblendtea.com/products/tea-toast",
+       "image": "https://www.birdandblendtea.com/cdn/shop/products/tea-toast-traditional-raspberry-loose-leaf-black-tea.png?v=1652803385&width=1500"
+    },
+    "The Digester": {
+        "caffeine": "Low",
+        "tea_type": "Oolong",
+        "mood": "Determined",
+        "product_url": "https://www.birdandblendtea.com/products/the-digester-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/digester-oolong-loose-leaf-tea-digestion-orange-ginger.png?v=1651994833&width=1500"
+    },
+    "Toffee Chai": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Cheeky",
+        "product_url": "https://www.birdandblendtea.com/products/toffee-chai-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/toffee-chai-sweet-spiced-loose-leaf-tea-rooibos-caffeine-free-treat.png?v=1652804106&width=1500"
+    },
+    "Treacle Sponge": {
+        "caffeine": "Low",
+        "tea_type": "Green",
+        "mood": "Nostalgic",
+        "product_url": "https://www.birdandblendtea.com/products/treacle-sponge-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/treacle-sponge-sweet-dessert-cake-loose-leaf-green-tea.png?v=1652803624&width=1500"
+    },
+    "Vicky's Sponge Cake": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Happy",
+        "product_url": "https://www.birdandblendtea.com/products/vickys-sponge-cake-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/vickys-sponge-cake-loose-leaf-black-tea-raspberry-cake-sweet-dessert.png?v=1651994112&width=1500"
+    },
+    "Violet Cream": {
+        "caffeine": "Medium",
+        "tea_type": "Black",
+        "mood": "Restful",
+        "product_url": "https://www.birdandblendtea.com/products/violet-cream-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/violet-cream-dark-chocolate-vanilla-black-loose-leaf-tea.png?v=1651997034&width=1500"
+    },
+    "Wedding Cake": {
+        "caffeine": "None",
+        "tea_type": "Rooibos",
+        "mood": "Hopeful",
+        "product_url": "https://www.birdandblendtea.com/products/wedding-cake-tea",
+        "image": "https://www.birdandblendtea.com/cdn/shop/products/wedding-cake-floral-rose-sweet-coconut-vanilla-dessert-vegan-loose-leaf-tea-rooibos-caffeine-free.png?v=1651997713&width=1500"
+    }
+}
+
+# Convert dictionary to DataFrame
+teadataframe = pd.DataFrame.from_dict(tea_data, orient='index')
+
+# Page set-up details 
+st.set_page_config(
+    page_title="Find Your Perfect B&B Tea!",
+    page_icon="🍵",
+    layout="centered",
+    initial_sidebar_state="expanded"
+)
+
+# Fake loading screen at the beginning just for funzies
+if 'loading_complete' not in st.session_state:
+    with st.empty():  # Temporary container for loading screen
+        st.subheader("✨ Preparing Your Perfect Cup of Tea...")  # Fake loading screen title
+        progress = st.progress(0)
+
+        steps = ["🌱 Loading Caffeination 🌱", "🍃 Loading Tea Types 🍃", "\U0001F60D Loading Moods \U0001F60D", "✨ Loading Bird & Blend Magic ✨"]
+        for i, step in enumerate(steps):
+            time.sleep(0.5)  # Simulated loading time
+            progress.progress((i + 1) / len(steps))
+            st.write(f"✅ {step}")
+
+        time.sleep(0.5)  #Quick pause before removing loading screen
+
+    #Track if loading is complete
+    st.session_state.loading_complete = True
+
+# Main App Begins (only shows once the fake loading screen is complete)
+if st.session_state.loading_complete:
+    st.title("Find Your Perfect Tea!")
+    st.write("Welcome to the perfect tea selection experience. Choose your preferences below!")
+
+# Function to filter teas selected by caffeine preference
+def filter_tea_by_caffeine(caffeine_preference):
+    caffeine_map = {
+        'Medium': ['Medium', 'Low', 'None'],
+        'Low': ['Low', 'None'],
+        'None': ['None']
+    }
+    valid_caffeine_levels = caffeine_map.get(caffeine_preference, [])
+    return teadataframe[teadataframe['caffeine'].isin(valid_caffeine_levels)]
+
+# Function to get tea type options based on caffeine level using b&b caffeine levels
+def get_tea_types_by_caffeine(caffeine_preference):
+    tea_type_map = {
+        'Medium': ['Black', 'Yerba Mate', 'Oolong', 'Green', 'White', 'Herbal', 'Fruit', 'Rooibos'],
+        'Low': ['Oolong', 'Green', 'White', 'Herbal', 'Fruit', 'Rooibos'],
+        'None': ['Fruit', 'Herbal', 'Rooibos']
+    }
+    return tea_type_map.get(caffeine_preference, [])
+
+
+# Step 1: Select Caffeine Level (default to blank so you go through each option)
+caffeine_preference = st.selectbox("Step 1: Choose your maximum caffeine level", ['', 'Medium', 'Low', 'None'])
+
+# Step 2: Select Tea Type (Only shows after Step 1 is chosen)
+tea_type = None
+if caffeine_preference:
+    tea_type_options = get_tea_types_by_caffeine(caffeine_preference)
+    tea_type = st.selectbox("Step 2: Choose your tea type", [''] + tea_type_options) if len(tea_type_options) > 0 else None
+
+# Step 3: Select Mood (Only shows after Step 2 is chosen)
+mood = None  #I kept having a mood error show up and this was the only way I could get rid of it 
+
+if tea_type:
+    mood_options = [''] + list(teadataframe[teadataframe['tea_type'] == tea_type]['mood'].unique())  # Add blank option so it doesn't appear straight away
+    mood = st.selectbox("Step 3: Which of these best represents your current mood?", [""] + mood_options)
+
+# Step 4: Reveal the Tea (Only shows after Step 3 is chosen)
+if mood:
+    final_tea = teadataframe[(teadataframe['tea_type'] == tea_type) & (teadataframe['mood'] == mood)]
+    
+    st.subheader("🍵 We think you should be sippin' on:")
+
+    # Show tea image with caption of tea name and a link to product page
+    for tea_name, tea_info in final_tea.iterrows():
+        product_url = tea_info['product_url']  # Link photo of product to product url in dataframe
+        
+        image_html = f'''
+        <div style="text-align: center;">
+            <a href="{product_url}" target="_blank">
+                <img src="{tea_info['image']}" width="150">
+            </a>
+            <p style="text-align: center;">{tea_name}</p>
+        </div>
+        '''
+        st.markdown(image_html, unsafe_allow_html=True)
