@@ -581,8 +581,8 @@ if 'loading_complete' not in st.session_state:
 
 # Main App Begins (only shows once the fake loading screen is complete)
 if st.session_state.loading_complete:
-    st.title("Find Your Perfect Tea!")
-    st.write("Welcome to the perfect tea selection experience. Choose your preferences below!")
+    st.title("Find Your Perfect Bird & Blend Tea!")
+    st.write("We use Bird & Blend magic to find your perfect tea! Just choose your preferences below!")
 
 # Function to filter teas selected by caffeine preference
 def filter_tea_by_caffeine(caffeine_preference):
